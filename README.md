@@ -53,7 +53,7 @@ sysadmin-agent/
 ## Установка на сервере
 
 ```bash
-git clone https://github.com/<you>/sysadmin-agent.git
+git clone https://github.com/Strazh94/sysadmin-agent.git
 cd sysadmin-agent
 sudo ./install.sh
 ```
