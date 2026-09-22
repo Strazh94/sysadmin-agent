@@ -1,0 +1,74 @@
+# sysadmin-agent configuration
+#
+# dry_run: true  -> only log alerts, do NOT perform destructive actions
+#                   (drop_caches, iptables ban, log rotation)
+# dry_run: false -> perform actions for real
+
+dry_run: true
+interval_sec: 30
+
+# IPs / CIDRs that must never be banned (your admin IPs, VPN, etc.)
+whitelist:
+  - 127.0.0.1
+  - 10.0.0.0/8
+  - 192.168.0.0/16
+
+# ---------------- monitors ----------------
+memory:
+  enabled: true
+  # trigger cleanup when used RAM exceeds this percent
+  used_percent_threshold: 90
+  # also trigger when swap usage exceeds this percent
+  swap_percent_threshold: 80
+
+disk:
+  enabled: true
+  # trigger log cleanup when free space on any mount below this percent
+  free_percent_threshold: 10
+  # paths that always have to stay free
+  critical_paths:
+    - /
+    - /var
+    - /tmp
+
+gpu:
+  # works only if nvidia-smi binary is present; silently disabled otherwise
+  enabled: true
+  used_percent_threshold: 90
+  mem_used_percent_threshold: 90
+
+ssh_log:
+  enabled: true
+  # number of failed password attempts from one IP inside window_sec -> ban
+  max_failed_attempts: 5
+  window_sec: 300
+  # ban TTL in seconds (0 = permanent)
+  ban_ttl_sec: 3600
+
+users:
+  # report locked / expired accounts every run (report-only, no changes)
+  enabled: true
+
+# ---------------- actions ----------------
+actions:
+  memory_cleanup:
+    enabled: true
+    # drop pagecache, dentries and inodes
+    drop_caches: true
+    # wipe files older than N days in these dirs
+    clean_tmp: true
+    tmp_max_age_days: 7
+
+  disk_cleanup:
+    enabled: true
+    # rotate + vacuum logs when disk is low
+    vacuum_journal_mb: 200
+    # delete *.gz / *.1 rotated logs older than N days in /var/log
+    log_max_age_days: 14
+
+  firewall:
+    enabled: true
+    # iptables chain used by the agent
+    chain: SYSADMIN_AGENT
+    # persist rules with netfilter-persistent if available
+    persist: true

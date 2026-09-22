@@ -1,0 +1,36 @@
+[Unit]
+Description=sysadmin-agent - server monitoring daemon with automated responses
+Documentation=https://github.com/sysadmin-agent
+Wants=network-online.target
+After=network-online.target ssh.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/sysadmin-agent/agent/__main__.py --config /etc/sysadmin-agent/config.yaml
+WorkingDirectory=/opt/sysadmin-agent
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+# journal + file logging (see agent/logging_setup.py)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sysadmin-agent
+
+# hardening
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=256M
+CPUQuota=20%
+
+# the agent needs root to: drop caches, vacuum journal, run iptables
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
